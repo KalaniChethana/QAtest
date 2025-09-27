@@ -22,7 +22,6 @@ public class TaskApiController {
         this.userRepo = userRepo;
     }
 
-    // Get all tasks for a specific user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Task>> getTasks(@PathVariable Long userId) {
         Optional<User> user = userRepo.findById(userId);
@@ -33,7 +32,6 @@ public class TaskApiController {
         return ResponseEntity.ok(tasks);
     }
 
-    // Add a new task
     @PostMapping("/add")
     public ResponseEntity<Task> addTask(@RequestBody Task task) {
         Optional<User> user = userRepo.findById(task.getUser().getId());
@@ -45,7 +43,6 @@ public class TaskApiController {
         return ResponseEntity.ok(savedTask);
     }
 
-    // Delete a task by ID
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         Optional<Task> task = taskRepo.findById(id);
@@ -56,7 +53,6 @@ public class TaskApiController {
         return ResponseEntity.ok().build();
     }
 
-    // Mark task as done
     @PutMapping("/done/{id}")
     public ResponseEntity<Task> markDone(@PathVariable Long id) {
         Optional<Task> task = taskRepo.findById(id);
@@ -67,5 +63,25 @@ public class TaskApiController {
         t.setDone(true);
         taskRepo.save(t);
         return ResponseEntity.ok(t);
+    }
+
+    // Query param version: /api/tasks/search?title=report
+    @GetMapping("/search")
+    public ResponseEntity<List<Task>> searchTasksByQuery(@RequestParam(name = "title", required = false) String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<Task> tasks = taskRepo.findByTitleLike(title.trim());
+        return ResponseEntity.ok(tasks);
+    }
+
+    // Path variable version: /api/tasks/search/report
+    @GetMapping("/search/{title}")
+    public ResponseEntity<List<Task>> searchTasksByPath(@PathVariable("title") String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<Task> tasks = taskRepo.findByTitleLike(title.trim());
+        return ResponseEntity.ok(tasks);
     }
 }
